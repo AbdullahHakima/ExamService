@@ -1,7 +1,6 @@
 ﻿using ExamService.Data.Entities;
 using ExamService.Infrastructure.Interfaces;
 using ExamService.Service.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExamService.Service.Services;
@@ -13,17 +12,17 @@ public class QuestionService : IQuestionService
     private readonly IExcelProsessorService _excelProsessorService;
     #endregion
     #region Constructor
-    public QuestionService(IQuestionRepository questionRepository,IExcelProsessorService excelProsessorService)
+    public QuestionService(IQuestionRepository questionRepository, IExcelProsessorService excelProsessorService)
     {
         _questionRepository = questionRepository;
         _excelProsessorService = excelProsessorService;
     }
     #endregion
     #region Methods
-    public async Task<Question?> GetQuestionByName(string name,Guid courseId)
+    public async Task<Question?> GetQuestionByName(string name, Guid courseId)
     {
-        string[] includes = { "Options", "ModuleQuestions" };   
-        var existQuestion= await _questionRepository.Find(q=>q.Text.Equals(name)&&q.CourseId==courseId,includes);
+        string[] includes = { "Options", "ModuleQuestions" };
+        var existQuestion = await _questionRepository.Find(q => q.Text.Equals(name) && q.CourseId == courseId, includes);
 
         return existQuestion;
     }
@@ -39,7 +38,7 @@ public class QuestionService : IQuestionService
 
     public async Task DeleteBulkQuestionsAsync(List<Question> updatedQuestions)
     {
-       await _questionRepository.DeleteRangeAsync(updatedQuestions);
+        await _questionRepository.DeleteRangeAsync(updatedQuestions);
     }
 
     public async Task DeleteQuestionAsync(Question question)
@@ -51,15 +50,15 @@ public class QuestionService : IQuestionService
     {
         return await _questionRepository.GetTableNoTracking()
                                  .Include(q => q.Options)
-                                 .Where(cq=>cq.CourseId==courseId)
+                                 .Where(cq => cq.CourseId == courseId)
                                  .ToListAsync();
     }
 
     public async Task<Question> GetQuestionByIdAsync(Guid id)
     {
-       var ExistedQuestion = _questionRepository.GetTableNoTracking()
-                                                .Include(q=>q.Options)
-                                                .Where(q=>q.Id==id).FirstOrDefault();
+        var ExistedQuestion = _questionRepository.GetTableNoTracking()
+                                                 .Include(q => q.Options)
+                                                 .Where(q => q.Id == id).FirstOrDefault();
         if (ExistedQuestion == null)
             return null;
         return ExistedQuestion;

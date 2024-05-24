@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExamService.Infrastructure.Repositories;
 
-public class StudentQuizzesRepository:GenericRepositoryAsync<StudentQuizzes>,IStudentQuizzesRepository
+public class StudentQuizzesRepository : GenericRepositoryAsync<StudentQuizzes>, IStudentQuizzesRepository
 {
     private readonly DbSet<StudentQuizzes> _studentQuizzes;
-    public StudentQuizzesRepository(ApplicationDbContext context ):base(context)
+    public StudentQuizzesRepository(ApplicationDbContext context) : base(context)
     {
-        _studentQuizzes= context.Set<StudentQuizzes>();
+        _studentQuizzes = context.Set<StudentQuizzes>();
     }
 }

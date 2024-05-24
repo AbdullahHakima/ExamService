@@ -9,7 +9,6 @@ public class Submission
     public Guid Id { get; set; }
     public decimal TotalGrade { get; set; }
     public DateTime SubmitAt { get; set; }
-    public bool IsLate { get; set; }
     public TimeOnly TimeTaken { get; set; }
     [ForeignKey(nameof(StudentId))]
     public Guid StudentId { get; set; }

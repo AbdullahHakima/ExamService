@@ -26,7 +26,8 @@ builder.Services.AddStackExchangeRedisCache(action =>
 builder.Services
     .AddInfrastructureDependencies()
     .AddServiceDependencies()
-    .AddCoreDependencies();
+    .AddCoreDependencies()
+    .AddServiceRegisteration();
 builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {

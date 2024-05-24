@@ -3,15 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExamService.Infrastructure.Data;
 
-public class ApplicationDbContext:DbContext
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext() { }
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
 
+
         modelBuilder.Entity<ModuleQuestion>()
- .HasKey(mq => new { mq.ModuleId, mq.QuestionId });
+            .HasKey(mq => new { mq.ModuleId, mq.QuestionId });
 
         modelBuilder.Entity<ModuleQuestion>()
             .HasOne(mq => mq.Module)
@@ -26,18 +27,18 @@ public class ApplicationDbContext:DbContext
             .HasKey(e => new { e.StudentId, e.QuizId });
 
         modelBuilder.Entity<InstructorCourses>()
-            .HasKey(ic=>new {ic.InstructorId, ic.CourseId});
+            .HasKey(ic => new { ic.InstructorId, ic.CourseId });
         modelBuilder.Entity<InstructorCourses>()
-            .HasOne(ic=>ic.instructor)
-            .WithMany(i=>i.InstructorCourses)
-            .HasForeignKey(ic=>ic.InstructorId);
+            .HasOne(ic => ic.instructor)
+            .WithMany(i => i.InstructorCourses)
+            .HasForeignKey(ic => ic.InstructorId);
         modelBuilder.Entity<InstructorCourses>()
-            .HasOne(ic=>ic.course)
-            .WithMany(c=>c.InstructorCourses)
-            .HasForeignKey(ic=>ic.CourseId);
+            .HasOne(ic => ic.course)
+            .WithMany(c => c.InstructorCourses)
+            .HasForeignKey(ic => ic.CourseId);
 
         modelBuilder.Entity<StudentCourses>()
-            .HasKey(sc => new {sc.StudentId, sc.CourseId });
+            .HasKey(sc => new { sc.StudentId, sc.CourseId });
         modelBuilder.Entity<StudentCourses>()
             .HasOne(sc => sc.student)
             .WithMany(s => s.StudentCourses)
@@ -49,7 +50,7 @@ public class ApplicationDbContext:DbContext
 
 
     }
-        
+
     public DbSet<Student> Students { get; set; }
     public DbSet<Instructor> Instructors { get; set; }
     public DbSet<Quiz> Quizs { get; set; }

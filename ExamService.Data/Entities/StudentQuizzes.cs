@@ -1,13 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ExamService.Data.Helpers.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ExamService.Data.Entities;
 
 public class StudentQuizzes
 {
-    [Key]
-    public Guid Id { get; set; }
-
     [ForeignKey(nameof(StudentId))]
     public Guid StudentId { get; set; }
     public Student Student { get; set; }
@@ -19,4 +16,11 @@ public class StudentQuizzes
     [ForeignKey(nameof(QuizId))]
     public Guid QuizId { get; set; }
     public Quiz quiz { get; set; }
+
+    [ForeignKey(nameof(SubmissionId))]
+    public Guid? SubmissionId { get; set; }
+    public Submission submission { get; set; }
+
+    public bool Enrolled { get; set; }
+    public QuizAttemptStatus AttemptStatus { get; set; }
 }

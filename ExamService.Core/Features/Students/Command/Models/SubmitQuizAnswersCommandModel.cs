@@ -1,11 +1,10 @@
 ﻿using ExamService.Core.Bases;
-using ExamService.Core.Features.Students.Queries.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExamService.Core.Features.Students.Command.Models;
 
-public class SubmitQuizAnswersCommandModel:IRequest<Response<SubmitQuizQueryResponse>>
+public class SubmitQuizAnswersCommandModel : IRequest<Response<string>>
 {
     [FromBody]
     public Guid quizId { get; set; }

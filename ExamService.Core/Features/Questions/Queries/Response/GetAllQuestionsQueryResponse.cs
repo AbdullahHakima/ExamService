@@ -1,5 +1,4 @@
-﻿using ExamService.Core.Features.Questions.Command.Models;
-using ExamService.Data.Helpers.DTOs.Questions;
+﻿using ExamService.Data.Helpers.DTOs.Questions;
 
 namespace ExamService.Core.Features.Questions.Queries.Response;
 

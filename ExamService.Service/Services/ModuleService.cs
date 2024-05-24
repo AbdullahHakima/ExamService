@@ -1,4 +1,5 @@
 ﻿using ExamService.Data.Entities;
+using ExamService.Data.Helpers.Enums;
 using ExamService.Infrastructure.Interfaces;
 using ExamService.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,17 +11,17 @@ namespace ExamService.Service.Services;
 public class ModuleService : IModuleService
 {
     #region Fields 
-    private readonly IStudentQuizzesRepository _studentQuizzesRepository;
+    private readonly IStudentQuizzesService _studentQuizzesService;
     private readonly IModuleRepository _moduleRepository;
     private readonly IDistributedCache _cache;
     private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1); // Initialize with initial request count 1 and maximum request count 1
     #endregion
     #region Constructors 
-    public ModuleService(IStudentQuizzesRepository studentQuizzesRepository, IModuleRepository moduleRepository,IDistributedCache cache)
+    public ModuleService(IStudentQuizzesService studentQuizzesService, IModuleRepository moduleRepository, IDistributedCache cache)
     {
         _moduleRepository = moduleRepository;
         _cache = cache;
-        _studentQuizzesRepository=studentQuizzesRepository;
+        _studentQuizzesService = studentQuizzesService;
     }
 
 
@@ -31,7 +32,7 @@ public class ModuleService : IModuleService
     {
         if (quizQuestions == null || quizQuestions.Count == 0 || numberOfModules <= 0 || numberOfQuestionsPerModule <= 0)
             throw new ArgumentException("Invalid input parameters");
-        
+
         // Shuffle the questions
         Random rng = new Random();
         List<Question> shuffledQuestions = quizQuestions.OrderBy(q => rng.Next()).ToList();
@@ -60,7 +61,7 @@ public class ModuleService : IModuleService
                         Points = q.Points,
                         Duration = q.Duration,
                         ImageLink = q.ImageLink,
-                        CourseId= q.CourseId,
+                        CourseId = q.CourseId,
                         Options = q.Options.Select(opt => new Option
                         {
                             Id = opt.Id,
@@ -85,7 +86,7 @@ public class ModuleService : IModuleService
 
             // Generate cache key based on courseId and instructorId
             var cacheKey = $"GeneratedModules:{courseId}:{instructorId}";
-            
+
             // Acquire asynchronous lock before accessing/modifying cache
             await _asyncLock.WaitAsync();
 
@@ -127,7 +128,7 @@ public class ModuleService : IModuleService
     {
         return await _moduleRepository.GetTableNoTracking()
                                   .Include(m => m.ModuleQuestions)
-                                      .ThenInclude(mq => mq.Question) 
+                                      .ThenInclude(mq => mq.Question)
                                           .ThenInclude(q => q.Options)
                                   .Where(m => m.QuizId == quizId)
                                   .ToListAsync();
@@ -143,7 +144,7 @@ public class ModuleService : IModuleService
         }
         return addedModules;
     }
-    public async Task<int> AssignModulesToStudent(List<Module> quizModules, List<Student> students,Guid quizId)
+    public async Task<int> AssignModulesToStudent(List<Module> quizModules, List<Student> students, Guid quizId)
     {
         var moduleIds = quizModules.Select(m => m.Id).ToList();
         // Shuffle the module IDs to randomize the assignment
@@ -159,16 +160,18 @@ public class ModuleService : IModuleService
             {
                 StudentId = students[i].Id,
                 QuizId = quizId,
-                ModuleId = shuffledModuleIds[i % shuffledModuleIds.Count]
+                ModuleId = shuffledModuleIds[i % shuffledModuleIds.Count],
+                AttemptStatus = QuizAttemptStatus.NotAttempted,
+                Enrolled = true
             };
 
             studentModuleAssignments.Add(assignment);
         }
 
-        await _studentQuizzesRepository.AddRangeAsync(studentModuleAssignments);
-        foreach(var module in quizModules)
+        await _studentQuizzesService.AddStudentsToQuizAsync(studentModuleAssignments);
+        foreach (var module in quizModules)
         {
-            module.AssignedCapacity= studentModuleAssignments.Count(a => a.ModuleId == module.Id);
+            module.AssignedCapacity = studentModuleAssignments.Count(a => a.ModuleId == module.Id);
             await _moduleRepository.UpdateAsync(module);
         }
         return studentModuleAssignments.Count;
@@ -176,14 +179,8 @@ public class ModuleService : IModuleService
 
     public async Task<Module?> GetStudentModuleByQuizId(Guid quizId, Guid studentId)
     {
-        string[] includes = { "Module" };
-        var studentQuiz = _studentQuizzesRepository.GetTableNoTracking()
-                                                   .Include(sq => sq.Module)
-                                                    .ThenInclude(sm => sm.ModuleQuestions)
-                                                     .ThenInclude(mq => mq.Question)
-                                                      .ThenInclude(q => q.Options)
-                                                   .SingleOrDefault(sq => (sq.QuizId == quizId && sq.StudentId == studentId));
-                                                            
+        var studentQuiz = await _studentQuizzesService.GetStudentQuizAsync(quizId, studentId);
+
         return studentQuiz.Module;
     }
 

@@ -17,6 +17,7 @@ namespace ExamService.Service
             services.AddTransient<IQuizService, QuizService>();
             services.AddTransient<IModuleService, ModuleService>();
             services.AddTransient<ISubmissionService, SubmissionService>();
+            services.AddTransient<IStudentQuizzesService, StudentQuizzesService>();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             return services;
         }

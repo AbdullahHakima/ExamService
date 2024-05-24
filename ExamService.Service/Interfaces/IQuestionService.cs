@@ -1,5 +1,4 @@
 ﻿using ExamService.Data.Entities;
-using Microsoft.AspNetCore.Http;
 
 namespace ExamService.Service.Interfaces;
 
@@ -13,5 +12,5 @@ public interface IQuestionService
     public Task UpdateBulkQuestionsAsync(List<Question> updatedQuestions);
     public Task DeleteQuestionAsync(Question question);
     public Task DeleteBulkQuestionsAsync(List<Question> updatedQuestions);
-    public Task<Question?> GetQuestionByName(string name,Guid courseId);
+    public Task<Question?> GetQuestionByName(string name, Guid courseId);
 }

@@ -4,14 +4,13 @@ using ExamService.Core.Features.Modules.Commands.Models;
 using ExamService.Data.Entities;
 using ExamService.Service.Interfaces;
 using MediatR;
-using Microsoft.Identity.Client;
 
 namespace ExamService.Core.Features.Modules.Commands.Handlers;
 
 public class ModuleCommandHandles : ResponseHandler
                                   , IRequestHandler<GenerateQuizModulesCommandModel, Response<List<Module>>>
                                   , IRequestHandler<PublishModulesCommandModel, Response<string>>
-                                  
+
 {
     #region Fields
     private readonly IModuleService _moduleService;
@@ -23,14 +22,14 @@ public class ModuleCommandHandles : ResponseHandler
     private readonly ISubmissionService _submissionService;
     #endregion
     #region Constructors
-    public ModuleCommandHandles(ISubmissionService submissionService,IMapper mapper,IStudentService studentService
-                               ,IQuizService quizService, IModuleService moduleService,IQuestionService questionService
-                               ,IExcelProsessorService excelProsessorService)
+    public ModuleCommandHandles(ISubmissionService submissionService, IMapper mapper, IStudentService studentService
+                               , IQuizService quizService, IModuleService moduleService, IQuestionService questionService
+                               , IExcelProsessorService excelProsessorService)
     {
         _moduleService = moduleService;
         _questionService = questionService;
         _excelProsessorService = excelProsessorService;
-        _quizService= quizService;
+        _quizService = quizService;
         _studentService = studentService;
         _mapper = mapper;
         _submissionService = submissionService;
@@ -45,43 +44,43 @@ public class ModuleCommandHandles : ResponseHandler
         if (request.questionsSheet == null || request.questionsSheet.Length == 0)
         {
             questionsBank = await _questionService.GetAllQuestionsAsync(request.courseId);
-            generatedModules = await _moduleService.GenerateModules(questionsBank, request.moduleNumbers, request.numberOfQuestionsPerModule,request.courseId,request.instructorId);
+            generatedModules = await _moduleService.GenerateModules(questionsBank, request.moduleNumbers, request.numberOfQuestionsPerModule, request.courseId, request.instructorId);
             return Success(generatedModules);
         }
-        using var Stream=request.questionsSheet.OpenReadStream();
+        using var Stream = request.questionsSheet.OpenReadStream();
         var questions = _excelProsessorService.ProcessExcelData(Stream, request.courseId);
-        if(questions != null)
+        if (questions != null)
         {
             foreach (var question in questions)
             {
-                var existingQuestion = await _questionService.GetQuestionByName(question.Text,question.CourseId);
+                var existingQuestion = await _questionService.GetQuestionByName(question.Text, question.CourseId);
                 if (existingQuestion is not null)
                     continue;
                 questionsBank.Add(question);
             }
-            if(questionsBank.Count==0)
+            if (questionsBank.Count == 0)
             {
-                foreach(var question in questions)
+                foreach (var question in questions)
                 {
-                    var queryQuestion= await _questionService.GetQuestionByName(question.Text,question.CourseId);
+                    var queryQuestion = await _questionService.GetQuestionByName(question.Text, question.CourseId);
                     questionsBank.Add(queryQuestion);
                 }
-                 
+
             }
         }
         else
         {
-            return BadRequest(new List<Module>() ,"Something occurred while uploading questions sheet");
+            return BadRequest(new List<Module>(), "Something occurred while uploading questions sheet");
         }
         generatedModules = await _moduleService.GenerateModules(questionsBank, request.moduleNumbers, request.numberOfQuestionsPerModule, request.courseId, request.instructorId);
-        return Success(generatedModules); 
+        return Success(generatedModules);
 
     }
 
     public async Task<Response<string>> Handle(PublishModulesCommandModel request, CancellationToken cancellationToken)
     {
 
-        var existingQuiz= await _quizService.GetQuizById(request.quizId);
+        var existingQuiz = await _quizService.GetQuizById(request.quizId);
         if (existingQuiz is null)
             return NotFound<string>("Quiz you are assign students to is not found");
         var quizModule = existingQuiz.Modules.ToList();
@@ -106,10 +105,9 @@ public class ModuleCommandHandles : ResponseHandler
         }
         existingQuiz.Capacity = TotalQuizAssignment;
         await _quizService.UpdateQuiz(existingQuiz);
-        return Success($"Quiz {existingQuiz.Name} is successfully created");
+        return Success($"Quiz {existingQuiz.Name} is successfully published");
     }
 
-    
 
 
 

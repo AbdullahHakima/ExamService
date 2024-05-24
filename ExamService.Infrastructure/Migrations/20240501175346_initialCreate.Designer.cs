@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExamService.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240419205432_update Submission table and Quiz table ")]
-    partial class updateSubmissiontableandQuiztable
+    [Migration("20240501175346_initialCreate")]
+    partial class initialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -86,6 +86,9 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<Guid?>("QuizId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("TotalGrade")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("QuizId");
@@ -140,15 +143,15 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<Guid>("CourseId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Duration")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Duration")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("ImageLink")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Points")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -170,10 +173,10 @@ namespace ExamService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("Capacity")
+                    b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("ClosedAt")
+                    b.Property<DateTime>("ClosedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CourseId")
@@ -198,7 +201,10 @@ namespace ExamService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("StartedDate")
+                    b.Property<DateTime>("StartedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -252,10 +258,16 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<Guid>("QuizId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
+                    b.Property<int>("AttemptStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Enrolled")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ModuleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SubmissionId")
                         .HasColumnType("uuid");
 
                     b.HasKey("StudentId", "QuizId");
@@ -263,6 +275,8 @@ namespace ExamService.Infrastructure.Migrations
                     b.HasIndex("ModuleId");
 
                     b.HasIndex("QuizId");
+
+                    b.HasIndex("SubmissionId");
 
                     b.ToTable("StudentQuizzes");
                 });
@@ -273,9 +287,6 @@ namespace ExamService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsLate")
-                        .HasColumnType("boolean");
-
                     b.Property<Guid>("ModuleId")
                         .HasColumnType("uuid");
 
@@ -285,7 +296,10 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<DateTime>("SubmitAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("TotalGrade")
+                    b.Property<TimeOnly>("TimeTaken")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<decimal>("TotalGrade")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
@@ -424,11 +438,17 @@ namespace ExamService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ExamService.Data.Entities.Submission", "submission")
+                        .WithMany()
+                        .HasForeignKey("SubmissionId");
+
                     b.Navigation("Module");
 
                     b.Navigation("Student");
 
                     b.Navigation("quiz");
+
+                    b.Navigation("submission");
                 });
 
             modelBuilder.Entity("ExamService.Data.Entities.Submission", b =>

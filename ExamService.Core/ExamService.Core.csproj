@@ -25,6 +25,7 @@
     <Folder Include="Features\Courses\Queries\Handlers\" />
     <Folder Include="Mapping\CoursesMapping\Commands\" />
     <Folder Include="Mapping\ModulesMapping\Commands\" />
+    <Folder Include="Mapping\SubmissionsMapping\Commands\" />
   </ItemGroup>
 
 </Project>

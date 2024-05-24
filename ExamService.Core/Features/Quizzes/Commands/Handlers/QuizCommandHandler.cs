@@ -19,54 +19,52 @@ public class QuizCommandHandler : ResponseHandler
     private readonly IDistributedCache _cache;
     private readonly IModuleService _moduleService;
     private readonly IQuizService _quizService;
-    private readonly IInstructorService _instructorService;
     #endregion
     #region Constructors
-    public QuizCommandHandler(IInstructorService instructorService,IMapper mapper,IQuizService quizService,IDistributedCache cache,IModuleService moduleService)
+    public QuizCommandHandler(IMapper mapper, IQuizService quizService, IDistributedCache cache, IModuleService moduleService)
     {
         _mapper = mapper;
         _cache = cache;
         _moduleService = moduleService;
         _quizService = quizService;
-        _instructorService = instructorService;
     }
     #endregion
     #region Methods
     public async Task<Response<string>> Handle(CreateQuizCommandModel request, CancellationToken cancellationToken)
     {
-        var mappedQuiz =  _mapper.Map<Quiz>(request);
-        var addedQuiz= await _quizService.CreateQuiz(mappedQuiz);
-        if(addedQuiz != null)
+        var mappedQuiz = _mapper.Map<Quiz>(request);
+        var addedQuiz = await _quizService.CreateQuiz(mappedQuiz);
+        if (addedQuiz != null)
         {
             var cacheKey = $"GeneratedModules:{request.courseId}:{request.instructorId}";
             var serializedModules = await _cache.GetStringAsync(cacheKey);
             var confirmedModules = JsonConvert.DeserializeObject<List<Module>>(serializedModules);
 
-            if(confirmedModules != null)
+            if (confirmedModules != null)
             {
-                foreach(var module in confirmedModules)
+                foreach (var module in confirmedModules)
                 {
                     module.QuizId = addedQuiz.Id;//ForeignKey
-                    module.Quiz=addedQuiz;//Navigation Property
+                    module.Quiz = addedQuiz;//Navigation Property
                 }
-                var addedModules=await _moduleService.SaveModules(confirmedModules);
-                foreach(var module in addedModules)
+                var addedModules = await _moduleService.SaveModules(confirmedModules);
+                foreach (var module in addedModules)
                 {
                     addedQuiz.Modules.Add(module);
                 }
                 return Created("Quiz is Created Successfully");
             }
         }
-        return UnprocessableEntity<string>("Can't process your request now,please try again"); 
+        return UnprocessableEntity<string>("Can't process your request now,please try again");
     }
 
     public async Task<Response<string>> Handle(UpdateQuizMetaDataCommandModel request, CancellationToken cancellationToken)
     {
-        var queryQuiz=await _quizService.GetQuizById(request.quizId);
+        var queryQuiz = await _quizService.GetQuizById(request.quizId);
         if (queryQuiz == null)
             return NotFound<string>("Quiz you are trying to edit on it is not found ");
         var quizMapped = _mapper.Map<Quiz>(request);
-        quizMapped.CreatedDate=queryQuiz.CreatedDate;
+        quizMapped.CreatedDate = queryQuiz.CreatedDate;
 
         await _quizService.UpdateQuiz(quizMapped);
         return Success<string>("your updating request is done successfully");

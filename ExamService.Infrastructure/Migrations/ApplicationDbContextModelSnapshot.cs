@@ -17,7 +17,7 @@ namespace ExamService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -255,10 +255,16 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<Guid>("QuizId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
+                    b.Property<int>("AttemptStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Enrolled")
+                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ModuleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SubmissionId")
                         .HasColumnType("uuid");
 
                     b.HasKey("StudentId", "QuizId");
@@ -266,6 +272,8 @@ namespace ExamService.Infrastructure.Migrations
                     b.HasIndex("ModuleId");
 
                     b.HasIndex("QuizId");
+
+                    b.HasIndex("SubmissionId");
 
                     b.ToTable("StudentQuizzes");
                 });
@@ -275,9 +283,6 @@ namespace ExamService.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<bool>("IsLate")
-                        .HasColumnType("boolean");
 
                     b.Property<Guid>("ModuleId")
                         .HasColumnType("uuid");
@@ -430,11 +435,17 @@ namespace ExamService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ExamService.Data.Entities.Submission", "submission")
+                        .WithMany()
+                        .HasForeignKey("SubmissionId");
+
                     b.Navigation("Module");
 
                     b.Navigation("Student");
 
                     b.Navigation("quiz");
+
+                    b.Navigation("submission");
                 });
 
             modelBuilder.Entity("ExamService.Data.Entities.Submission", b =>

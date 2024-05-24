@@ -1,12 +1,13 @@
-﻿namespace ExamService.Core.Features.Quizzes.Queries.Responses;
+﻿using ExamService.Core.DTOs.Quizzes;
+using ExamService.Core.DTOs.Submissions;
+
+namespace ExamService.Core.Features.Quizzes.Queries.Responses;
 
 public class ViewQuizDetailsQueryResponse
 {
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public DateTime StartedAt { get; set; }
-    public DateTime closedAt { get; set;}
-    public decimal Grade { get; set; }
-    public decimal Duration { get; set; }
-    public string instructorName { get; set; }
+    public ViewQuizDetailsDto QuizDetails { get; set; }
+    public ViewSubmissionDto? SubmissionDeatils { get; set; }
+    public string status { get; set; }
+    public bool IsEnrolled { get; set; }
+
 }

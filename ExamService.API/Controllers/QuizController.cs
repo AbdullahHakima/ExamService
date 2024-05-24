@@ -2,12 +2,10 @@
 using ExamService.Core.Features.Quizzes.Commands.Models;
 using ExamService.Core.Features.Quizzes.Queries.Models;
 using ExamService.Data.MetaData;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ExamService.API.Controllers;
 
-[Authorize]
 [ApiController]
 public class QuizController : ApplicationController
 {
@@ -39,9 +37,9 @@ public class QuizController : ApplicationController
         return NewResult(response);
     }
     [HttpPost(Router.QuizRouting.ViewQuizDetails)]
-    public async Task<IActionResult> ViewQuizDetails([FromQuery] Guid quizId)
+    public async Task<IActionResult> ViewQuizDetails([FromBody] ViewQuizDetailsQueryModel command)
     {
-        var response = await Mediator.Send(new ViewQuizDetailsQueryModel { quizId = quizId });
+        var response = await Mediator.Send(command);
         return NewResult(response);
     }
     [HttpPost(Router.QuizRouting.IncomingQuizzes)]

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ExamService.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,8 +55,8 @@ namespace ExamService.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Text = table.Column<string>(type: "text", nullable: false),
                     ImageLink = table.Column<string>(type: "text", nullable: false),
-                    Points = table.Column<int>(type: "integer", nullable: false),
-                    Duration = table.Column<int>(type: "integer", nullable: false),
+                    Points = table.Column<decimal>(type: "numeric", nullable: false),
+                    Duration = table.Column<decimal>(type: "numeric", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     CourseId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -103,8 +103,10 @@ namespace ExamService.Infrastructure.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    StartedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Capacity = table.Column<int>(type: "integer", nullable: true),
+                    StartedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Capacity = table.Column<int>(type: "integer", nullable: false),
                     Grade = table.Column<decimal>(type: "numeric", nullable: false),
                     Duration = table.Column<double>(type: "double precision", nullable: false),
                     InstructorId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -178,7 +180,8 @@ namespace ExamService.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     AssignedCapacity = table.Column<int>(type: "integer", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    QuizId = table.Column<Guid>(type: "uuid", nullable: false)
+                    TotalGrade = table.Column<decimal>(type: "numeric", nullable: false),
+                    QuizId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -187,32 +190,7 @@ namespace ExamService.Infrastructure.Migrations
                         name: "FK_Modules_Quizs_QuizId",
                         column: x => x.QuizId,
                         principalTable: "Quizs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StudentQuizzes",
-                columns: table => new
-                {
-                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    QuizId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StudentQuizzes", x => new { x.StudentId, x.QuizId });
-                    table.ForeignKey(
-                        name: "FK_StudentQuizzes_Quizs_QuizId",
-                        column: x => x.QuizId,
-                        principalTable: "Quizs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_StudentQuizzes_Students_StudentId",
-                        column: x => x.StudentId,
-                        principalTable: "Students",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -244,8 +222,9 @@ namespace ExamService.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TotalGrade = table.Column<int>(type: "integer", nullable: false),
+                    TotalGrade = table.Column<decimal>(type: "numeric", nullable: false),
                     SubmitAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TimeTaken = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     StudentId = table.Column<Guid>(type: "uuid", nullable: false),
                     ModuleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -264,6 +243,45 @@ namespace ExamService.Infrastructure.Migrations
                         principalTable: "Students",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentQuizzes",
+                columns: table => new
+                {
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuizId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ModuleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubmissionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Enrolled = table.Column<bool>(type: "boolean", nullable: false),
+                    AttemptStatus = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentQuizzes", x => new { x.StudentId, x.QuizId });
+                    table.ForeignKey(
+                        name: "FK_StudentQuizzes_Modules_ModuleId",
+                        column: x => x.ModuleId,
+                        principalTable: "Modules",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StudentQuizzes_Quizs_QuizId",
+                        column: x => x.QuizId,
+                        principalTable: "Quizs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StudentQuizzes_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StudentQuizzes_Submissions_SubmissionId",
+                        column: x => x.SubmissionId,
+                        principalTable: "Submissions",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -307,9 +325,19 @@ namespace ExamService.Infrastructure.Migrations
                 column: "CourseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StudentQuizzes_ModuleId",
+                table: "StudentQuizzes",
+                column: "ModuleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StudentQuizzes_QuizId",
                 table: "StudentQuizzes",
                 column: "QuizId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StudentQuizzes_SubmissionId",
+                table: "StudentQuizzes",
+                column: "SubmissionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Submissions_ModuleId",
@@ -341,10 +369,10 @@ namespace ExamService.Infrastructure.Migrations
                 name: "StudentQuizzes");
 
             migrationBuilder.DropTable(
-                name: "Submissions");
+                name: "Questions");
 
             migrationBuilder.DropTable(
-                name: "Questions");
+                name: "Submissions");
 
             migrationBuilder.DropTable(
                 name: "Modules");

@@ -2,15 +2,16 @@
 
 namespace ExamService.Core.Mapping.QuizzesMapping;
 
-public partial class QuizProfile:Profile
+public partial class QuizProfile : Profile
 {
-    public QuizProfile() 
+    public QuizProfile()
     {
         CreateQuizMapping();
         GetAllCourseQuizzesMapping();
         GetQuizByIdMapping();
         UpdateQuizMetaDataMapping();
-        ViewQuizDetailsQueryMapping();
+        ViewQuizDetailsMapping();
         GetIncomingCourseQuizzesMapping();
+        ViewQuizDetailsQueryMapping();
     }
 }
